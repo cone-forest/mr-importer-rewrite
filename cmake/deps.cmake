@@ -11,6 +11,7 @@ CPMAddPackage("gh:spnda/fastgltf#main")
 CPMAddPackage("gh:zeux/meshoptimizer#master")
 CPMAddPackage("gh:4j-company/mr-contractor#master")
 CPMAddPackage("gh:4j-company/mr-math#master")
+CPMAddPackage("gh:raysan5/raylib#master")
 
 if (NOT TARGET libstb-image)
   # download a single file from stb

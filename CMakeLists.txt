@@ -20,7 +20,6 @@ target_include_directories(mr-importer-lib PUBLIC include)
 # )
 # target_link_libraries(mr-importer-tests PUBLIC mr-importer-lib gtest_main gtest)
 
-find_package(raylib REQUIRED)
 add_executable(
   mr-importer-example
   examples/rendertest.cpp
