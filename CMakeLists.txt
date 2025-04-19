@@ -30,5 +30,6 @@ add_executable(
 )
 target_link_libraries(mr-importer-example PUBLIC
     mr-importer-lib
-    raylib
+    polyscope
+    # raylib
 )

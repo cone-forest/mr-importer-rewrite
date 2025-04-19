@@ -11,7 +11,8 @@ CPMAddPackage("gh:spnda/fastgltf#main")
 CPMAddPackage("gh:zeux/meshoptimizer#master")
 CPMAddPackage("gh:4j-company/mr-contractor#master")
 CPMAddPackage("gh:4j-company/mr-math#master")
-CPMAddPackage("gh:raysan5/raylib#master")
+# CPMAddPackage("gh:raysan5/raylib#master")
+CPMAddPackage("gh:nmwsharp/polyscope@1.3.0")
 CPMFindPackage(
   NAME glm
   GITHUB_REPOSITORY icaven/glm
