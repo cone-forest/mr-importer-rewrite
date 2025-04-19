@@ -5,3 +5,4 @@
 #include "atomic_unique_ptr.hpp"
 #include "manager.hpp"
 #include "loader.hpp"
+#include "optimizer.hpp"

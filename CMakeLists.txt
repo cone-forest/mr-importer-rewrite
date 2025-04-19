@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.27)
 project(mr-importer)
 
+set(BUILD_SHARED_LIBS OFF)
+
 include(cmake/deps.cmake)
 
 add_library(mr-importer-lib
@@ -9,6 +11,8 @@ add_library(mr-importer-lib
   include/mr-importer/importer.hpp
   include/mr-importer/loader.hpp
   include/mr-importer/loader.cpp
+  include/mr-importer/optimizer.hpp
+  include/mr-importer/optimizer.cpp
 )
 target_compile_features(mr-importer-lib PUBLIC cxx_std_23)
 target_link_libraries(mr-importer-lib PUBLIC ${MR_IMPORTER_DEPS})

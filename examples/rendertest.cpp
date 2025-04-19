@@ -2,7 +2,10 @@
 #include "render.hpp"
 
 int main() {
-  auto asset = mr::import("/home/michael/Development/Personal/mr-importer-rewrite/ABeautifulGame/ABeautifulGame.gltf");
+  auto asset = mr::import("D:/Development/mr-importer-rewrite/ABeautifulGame/ABeautifulGame.gltf");
+  for (auto& mesh : asset.meshes) {
+      mesh = mr::optimize(std::move(mesh));
+  }
 
-  render(asset.meshes[0].positions, asset.meshes[0].indices);
+  render(asset.meshes.front().positions, asset.meshes.front().lods.back().indices);
 }

@@ -9,17 +9,17 @@
 using mr::Vec3f;
 
 inline void render(std::vector<glm::vec3> positions, std::vector<uint32_t> indices) {
-  constexpr int screenWidth = 800;
-  constexpr int screenHeight = 600;
+  constexpr int screenWidth = 1800;
+  constexpr int screenHeight = 1600;
 
   InitWindow(screenWidth, screenHeight, "Mesh Rendering");
-  SetTargetFPS(30);
+  SetTargetFPS(60);
 
   // Setup camera
   Camera3D camera = { 0 };
-  camera.position = (Vector3){ 0.0f, 0.0f, 10.0f }; // Camera position
-  camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
-  camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector
+  camera.position = Vector3{ 0.0f, 0.0f, 10.0f }; // Camera position
+  camera.target = Vector3{ 0.0f, 0.0f, 0.0f };      // Camera looking at point
+  camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector
   camera.fovy = 90.0f;                                // Camera field-of-view Y
   camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 
@@ -46,8 +46,8 @@ inline void render(std::vector<glm::vec3> positions, std::vector<uint32_t> indic
   Model model = LoadModelFromMesh(mesh);
 
   // Camera movement settings
-  float moveSpeed = 0.1f;
-  float mouseSensitivity = 0.003f;
+  float moveSpeed = 0.02f;
+  float mouseSensitivity = 0.001f;
   float cameraPitch = 0.0f; // Up/down rotation (radians)
   float cameraYaw = 0.0f;   // Left/right rotation (radians)
 

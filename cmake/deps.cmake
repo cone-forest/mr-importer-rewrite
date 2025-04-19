@@ -12,6 +12,14 @@ CPMAddPackage("gh:zeux/meshoptimizer#master")
 CPMAddPackage("gh:4j-company/mr-contractor#master")
 CPMAddPackage("gh:4j-company/mr-math#master")
 CPMAddPackage("gh:raysan5/raylib#master")
+CPMFindPackage(
+  NAME glm
+  GITHUB_REPOSITORY icaven/glm
+  GIT_TAG master
+  OPTIONS
+    "GLM_BUILD_LIBRARY ON"
+    "GLM_ENABLE_CXX_20 ON"
+)
 
 if (NOT TARGET libstb-image)
   # download a single file from stb
@@ -25,6 +33,4 @@ if (NOT TARGET libstb-image)
   target_include_directories(libstb-image INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/_deps/stb-src/)
 endif()
 
-find_package(TBB REQUIRED tbb)
-
-set(MR_IMPORTER_DEPS fastgltf::fastgltf meshoptimizer tbb libstb-image efsw mr-contractor-lib mr-math-lib)
+set(MR_IMPORTER_DEPS fastgltf::fastgltf meshoptimizer libstb-image efsw mr-contractor-lib mr-math-lib glm::glm)
