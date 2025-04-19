@@ -7,5 +7,5 @@ int main() {
       mesh = mr::optimize(std::move(mesh));
   }
 
-  render(asset.meshes.front().positions, asset.meshes.front().lods.back().indices);
+  render(asset.meshes);
 }

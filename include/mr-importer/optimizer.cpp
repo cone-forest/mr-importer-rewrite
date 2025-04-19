@@ -55,7 +55,7 @@ inline namespace importer {
 
     // so that last lod is a sparse subset of the original mesh
     constexpr auto k = [](size_t lod_level) {
-      std::array ratios = { 1.0f, 0.6f, 0.4f, 0.25f, 0.1f, 0.02f };
+      std::array ratios = { 1.0f, 0.5f, 0.3f, 0.1f, 0.05f, 0.01f };
       return ratios[std::round((float)lod_level / (Mesh::lodcount-1) * (ratios.size() - 1))];
     };
 	size_t original_index_count = result.lods[0].indices.size();
