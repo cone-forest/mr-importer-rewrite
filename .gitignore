@@ -37,3 +37,4 @@ out/
 compile_commands.json
 ABeautifulGame
 
+*.ini
