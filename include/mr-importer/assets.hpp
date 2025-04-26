@@ -50,7 +50,7 @@ inline namespace importer {
 
   // material-related data
   struct ImageData {
-    std::vector<Color> pixels;
+    std::unique_ptr<Color[]> pixels;
     uint32_t width;
     uint32_t height;
   };

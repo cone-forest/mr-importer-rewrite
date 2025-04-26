@@ -1,6 +1,8 @@
+#include "mr-importer/assets.hpp"
+#include <polyscope/render/materials.h>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <polyscope/polyscope.h>
-#include <polyscope/surface_mesh.h>
+#include "polyscope/polyscope.h"
+#include "polyscope/surface_mesh.h"
 
 #include <glm/glm.hpp>
 #include <mr-math/vec.hpp>
@@ -32,11 +34,14 @@ inline void render(std::vector<glm::vec3> positions, std::vector<uint32_t> indic
 inline void render(std::vector<mr::Mesh> meshes) {
   polyscope::init();
 
+  // Disable ground
+  polyscope::options::groundPlaneMode = polyscope::GroundPlaneMode::None;
+
   float xoffset = 0;
   for (int i = 0; i < meshes.size(); i++) {
 	  auto& mesh = meshes[i];
 
-	  // Compute min and max for this LOD
+	  // Compute min and max for this mesh
 	  glm::vec3 min(std::numeric_limits<float>::max());
 	  glm::vec3 max(std::numeric_limits<float>::lowest());
 	  for (const auto& pos : mesh.positions) {
@@ -49,10 +54,12 @@ inline void render(std::vector<mr::Mesh> meshes) {
 
 	  for (int j = 0; j < mesh.lods.size(); j++) {
 		  auto& lod = mesh.lods[j];
-		  auto *meshptr = polyscope::registerSurfaceMesh(std::format("Mesh {}; LOD {}", i, j), mesh.positions, convertToArrayOfTriples(lod.indices));
+		  auto *meshptr = polyscope::registerSurfaceMesh(
+        std::format("Mesh {}; LOD {}", i, j),
+        mesh.positions,
+        convertToArrayOfTriples(lod.indices));
 		  meshptr->setPosition(glm::vec3(xoffset + i * std::abs(delta.x), 0, j * std::abs(delta.z)));
 		  meshptr->setEdgeWidth(1.0);  // Enable edge rendering by default
-
 	  }
 	  xoffset += std::abs(delta.x);
   }

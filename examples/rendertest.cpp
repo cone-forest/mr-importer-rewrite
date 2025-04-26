@@ -1,10 +1,15 @@
 #include <mr-importer/importer.hpp>
 #include "render_polyscope.hpp"
 
-int main() {
-  auto asset = mr::import("D:/Development/mr-importer-rewrite/ABeautifulGame/ABeautifulGame.gltf");
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf("Usage: mr-importer-example <filename>");
+    exit(47);
+  }
+
+  auto asset = mr::import(argv[1]);
   for (auto& mesh : asset.meshes) {
-      mesh = mr::optimize(std::move(mesh));
+    mesh = mr::optimize(std::move(mesh));
   }
 
   render(asset.meshes);

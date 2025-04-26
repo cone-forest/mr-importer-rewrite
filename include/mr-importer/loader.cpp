@@ -1,5 +1,6 @@
 #include <print>
 
+#include "mr-importer/def.hpp"
 #include <fastgltf/core.hpp>
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
@@ -71,12 +72,117 @@ inline namespace importer {
       for (const auto& primitive : gltfMesh.primitives) {
         auto mesh_opt = getMeshFromPrimitive(asset, primitive);
         if (mesh_opt.has_value()) {
-	      result.emplace_back(std::move(mesh_opt.value()));
+          result.emplace_back(std::move(mesh_opt.value()));
         }
       }
     }
 
     return result;
+  }
+
+  static std::optional<ImageData> loadImageFromURI(fastgltf::sources::URI& filePath) {
+    assert(filePath.fileByteOffset == 0); // We don't support offsets with stbi.
+    assert(filePath.uri.isLocalPath()); // We're only capable of loading
+
+    int width, height, nrChannels;
+
+    Color* dataptr = (Color*)stbi_load(filePath.uri.c_str(), &width, &height, &nrChannels, 4);
+
+    if (not dataptr) {
+      return std::nullopt;
+    }
+
+    return ImageData{
+      .pixels = std::unique_ptr<Color[]>(dataptr),
+      .width = (uint32_t)width,
+      .height = (uint32_t)height,
+    };
+  }
+
+  static std::optional<ImageData> loadImageFromVector(fastgltf::sources::Vector& vector) {
+    int width, height, nrChannels;
+
+    Color* dataptr = (Color*)stbi_load_from_memory((unsigned char *)vector.bytes.data(), (int)vector.bytes.size(), &width, &height, &nrChannels, 4);
+
+    if (not dataptr) {
+      return std::nullopt;
+    }
+
+    return ImageData{
+      .pixels = std::unique_ptr<Color[]>(dataptr),
+      .width = (uint32_t)width,
+      .height = (uint32_t)height,
+    };
+  }
+
+  static std::optional<ImageData> getImagesFromGLTF(const fastgltf::Asset &asset, const fastgltf::Image &image) {
+    ImageData newImage {};
+
+    int width, height, nrChannels;
+
+    std::visit(fastgltf::visitor {
+      [](auto &arg){},
+      [&](fastgltf::sources::URI& filePath) {
+      },
+      [&](fastgltf::sources::Vector& vector) {
+      },
+      [&](fastgltf::sources::BufferView& view) {
+      }
+    }, image.data);
+
+    /*
+    std::visit(
+      fastgltf::visitor {
+        [](auto& arg) {},
+        [&](fastgltf::sources::URI& filePath) {
+          assert(filePath.fileByteOffset == 0); // We don't support offsets with stbi.
+          assert(filePath.uri.isLocalPath()); // We're only capable of loading
+          // local files.
+
+          const std::string path(filePath.uri.path().begin(),
+                                 filePath.uri.path().end()); // Thanks C++.
+          unsigned char* dataptr = stbi_load(path.c_str(), &width, &height, &nrChannels, 4);
+          if (dataptr) {
+            VkExtent3D imagesize;
+            imagesize.width = width;
+            imagesize.height = height;
+            imagesize.depth = 1;
+          }
+        },
+        [&](fastgltf::sources::Vector& vector) {
+          unsigned char* data = stbi_load_from_memory(vector.bytes.data(), static_cast<int>(vector.bytes.size()),
+                                                      &width, &height, &nrChannels, 4);
+          if (data) {
+            VkExtent3D imagesize;
+            imagesize.width = width;
+            imagesize.height = height;
+            imagesize.depth = 1;
+          }
+        },
+        [&](fastgltf::sources::BufferView& view) {
+          auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+          auto& buffer = asset.buffers[bufferView.bufferIndex];
+
+          std::visit(fastgltf::visitor { // We only care about VectorWithMime here, because we
+            // specify LoadExternalBuffers, meaning all buffers
+            // are already loaded into a vector.
+            [](auto& arg) {},
+            [&](fastgltf::sources::Vector& vector) {
+              unsigned char* data = stbi_load_from_memory(vector.bytes.data() + bufferView.byteOffset,
+                                                          static_cast<int>(bufferView.byteLength),
+                                                          &width, &height, &nrChannels, 4);
+              if (data) {
+                VkExtent3D imagesize;
+                imagesize.width = width;
+                imagesize.height = height;
+                imagesize.depth = 1;
+              }
+            } },
+                     buffer.data);
+        },
+      },
+      image.data);
+    */
   }
 
   // Sequence:
