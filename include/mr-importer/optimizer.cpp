@@ -1,8 +1,53 @@
 #include "def.hpp"
+#include "mr-importer/assets.hpp"
+#include <meshoptimizer.h>
 #include "optimizer.hpp"
 
 namespace mr {
 inline namespace importer {
+  std::pair<IndexArray, IndexArray> generate_lod(
+    const PositionArray &positions,
+    const IndexArray &original_indices,
+    const std::span<meshopt_Stream> &streams,
+    int lod_index)
+  {
+    static constexpr float target_error = 0.05f;
+    static constexpr auto k = [](size_t lod_level) {
+      constexpr std::array ratios = { 1.0f, 0.3f, 0.1f, 0.05f, 0.01f, 0.005f };
+      int idx = std::round((float)lod_level / (Mesh::lodcount-1) * (ratios.size() - 1));
+      return ratios[idx];
+    };
+
+    IndexArray result_indices;
+    IndexArray result_shadow_indices;
+
+    size_t original_index_count = original_indices.size();
+
+    result_indices.resize(original_index_count);
+    float lod_error = 0.f;
+    result_indices.resize(
+      meshopt_simplify(
+        result_indices.data(),
+        original_indices.data(), original_indices.size(),
+        (float*)positions.data(), positions.size(), sizeof(Position),
+        original_index_count * k(lod_index), target_error,
+        /* Don't simplify "free" edges */ meshopt_SimplifyLockBorder |
+        /* Treat last lod as sparse    */ (lod_index == Mesh::lodcount - 1 ? meshopt_SimplifySparse : 0),
+        &lod_error)
+    );
+
+    meshopt_optimizeVertexCache(result_indices.data(), result_indices.data(), result_indices.size(), positions.size());
+
+    result_shadow_indices.resize(result_indices.size());
+    meshopt_generateShadowIndexBufferMulti(result_shadow_indices.data(),
+                                           result_indices.data(), result_indices.size(),
+                                           positions.size(),
+                                           streams.data(), streams.size());
+    meshopt_optimizeVertexCache(result_shadow_indices.data(), result_shadow_indices.data(), result_shadow_indices.size(), positions.size());
+
+    return {result_indices, result_shadow_indices};
+  }
+
   Mesh optimize(Mesh mesh) {
     if (mesh.attributes.empty()) {
       mesh.attributes.resize(mesh.positions.size());
@@ -55,32 +100,11 @@ inline namespace importer {
                                            result.positions.size(),
                                            streams.data(), streams.size());
 
-    // LOD generation
-    constexpr auto k = [](size_t lod_level) {
-      std::array ratios = { 1.0f, 0.5f, 0.3f, 0.1f, 0.05f, 0.01f };
-      return ratios[std::round((float)lod_level / (Mesh::lodcount-1) * (ratios.size() - 1))];
-    };
-    size_t original_index_count = result.lods[0].indices.size();
-    float target_error = 0.05f;
-    for (size_t i = 1; i < Mesh::lodcount; i++) {
-      result.lods[i].indices.resize(original_index_count);
-      float lod_error = 0.f;
-      result.lods[i].indices.resize(
-        meshopt_simplify(
-          result.lods[i].indices.data(),
-          result.lods[i - 1].indices.data(), result.lods[i - 1].indices.size(),
-          (float*)result.positions.data(), result.positions.size(), sizeof(Position),
-          original_index_count * k(i), target_error,
-          /* Don't simplify "free" edges */ meshopt_SimplifyLockBorder |
-          /* Treat last lod as sparse    */ (i == Mesh::lodcount - 1 ? meshopt_SimplifySparse : 0),
-          &lod_error)
-      );
+    float lodScale = meshopt_simplifyScale((float*)result.positions.data(), result.positions.size(), sizeof(Position));
 
-      result.lods[i].shadow_indices.resize(result.lods[i].indices.size());
-      meshopt_generateShadowIndexBufferMulti(result.lods[i].shadow_indices.data(),
-                                             result.lods[i].indices.data(), result.lods[i].indices.size(),
-                                             result.positions.size(),
-                                             streams.data(), streams.size());
+    // LOD generation
+    for (int i = 1; i < Mesh::lodcount; i++) {
+      std::tie(result.lods[i].indices, result.lods[i].shadow_indices) = generate_lod(result.positions, result.lods[0].indices, streams, i);
     }
 
     return result;
