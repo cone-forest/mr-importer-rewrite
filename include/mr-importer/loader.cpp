@@ -43,6 +43,7 @@ inline namespace importer {
 
     // Process indices
     assert(primitive.indicesAccessor.has_value());
+    mesh.lods.resize(1);
     auto& idxAccessor = asset.accessors[primitive.indicesAccessor.value()];
     mesh.lods[0].indices.resize(idxAccessor.count);
     fastgltf::copyFromAccessor<std::uint32_t>(asset, idxAccessor, mesh.lods[0].indices.data());
@@ -129,6 +130,8 @@ inline namespace importer {
       [&](fastgltf::sources::BufferView& view) {
       }
     }, image.data);
+
+    return newImage;
 
     /*
     std::visit(

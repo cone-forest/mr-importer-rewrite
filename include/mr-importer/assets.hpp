@@ -35,17 +35,14 @@ inline namespace importer {
   };
 
   struct Mesh {
-	static inline constexpr size_t lodcount = 6;
-    static_assert(lodcount >= 1, "lodcount should be at least 1 (lods[0] is not simplified)");
-
     struct LOD {
-	  IndexArray indices;
-	  IndexArray shadow_indices;
+	    IndexArray indices;
+	    IndexArray shadow_indices;
     };
 
     PositionArray positions;
     VertexAttributesArray attributes;
-    std::array<LOD, lodcount> lods;
+    std::vector<LOD> lods;
   };
 
   // material-related data
