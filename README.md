@@ -1,18 +1,30 @@
 # Opinionated asset importer
+
+## Features
+- Geometry import and optimization
+- Automatic LOD generation
+
+## Build
+```bash
+git clone https://github.com/4j-company/mr-importer
+cd mr-importer
+cmake -S . -B build
+cmake --build build
+```
+
 ## Dependencies:
-- fastgltf
-- meshoptimizer
-- (?) `taskflow`/`work_contracts`/`...`
+- Filewatcher: [efsw](https://github.com/SpartanJ/efsw)
+- GLTF parser: [fastgltf](https://github.com/spnda/fastgltf)
+- Mesh Processor: [meshoptimizer](https://github.com/zeux/meshoptimizer)
+- Parallel task execution: [mr-contractor](https://github.com/4j-company/mr-contractor)
+- Math library: [mr-math](https://github.com/4j-company/mr-math)
 
-## TODO: (feat)
-- Load textures (with samplers)
-- Load materials
+NOTE: automatically downloaded (if not found) via CMake script
 
-## TODO: (perf)
-- Dont copy data in the `Extractor` phase as there shouldn't be any shared data between different primitives
-- Handle uniqueness of buffers (as in manager)
-- try `taskflow`
-- try `work_contracts`
-- Determine sequential/parallel execution based on asset size
-- Determine whether `meshopt` routines are necessary based on mesh size
+## TODO
+- Features:
+    - Load textures (with samplers)
+    - Load materials
+- Performance:
+    - Try to give out `std::span` instead of `std::vector` for positions, indices, etc.
 
