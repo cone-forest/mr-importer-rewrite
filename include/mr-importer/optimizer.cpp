@@ -12,6 +12,11 @@ inline namespace importer {
     float lod_scale = meshopt_simplifyScale((float*)positions.data(), positions.size(), sizeof(Position));
     size_t lod_count = 0;
 
+    if (lod_scale > 1) {
+        std::println("LOD Scale greater than 1. Needs investigation");
+        lod_scale = 0.1;
+    }
+
     // we want any mesh to have at least 47 triangles
     while (positions.size() * std::pow(lod_scale, lod_count) / 3 >= 47) {
       lod_count++;

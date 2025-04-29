@@ -68,6 +68,7 @@ inline namespace importer {
     auto [error, asset] = parser.loadGltf(data, path.parent_path(), options);
     if (error != Error::None) {
       std::println("Failed to parse GLTF file");
+      std::println("Error code: {}", (int)error);
       return {};
     }
 
