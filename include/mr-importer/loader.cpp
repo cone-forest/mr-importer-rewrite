@@ -7,6 +7,7 @@
 #include <fastgltf/glm_element_traits.hpp>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "loader.hpp"
 
@@ -37,6 +38,7 @@ inline namespace importer {
       std::println("primitive didn't contain buffer view");
       return std::nullopt;
     }
+    mesh.positions.reserve(posAccessor.count);
     fastgltf::iterateAccessor<glm::vec3>(asset, posAccessor, [&](glm::vec3 v) {
       mesh.positions.push_back(v);
     });
@@ -69,11 +71,28 @@ inline namespace importer {
       return {};
     }
 
+    std::vector<fastgltf::math::fmat4x4> transforms;
+    fastgltf::iterateSceneNodes(asset, 0, fastgltf::math::fmat4x4(),
+      [&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
+        if (node.meshIndex.has_value()) {
+          std::println("node name: {}", node.name);
+          std::println("mesh index: {}", *node.meshIndex);
+          transforms.push_back(transpose(matrix));
+          for (int i = 0; i < 4; i++) {
+            std::println("{} {} {} {}", matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3]);
+          }
+        }
+      }
+    );
+
+    int transform_index = 0;
     for (const auto& gltfMesh : asset.meshes) {
       for (const auto& primitive : gltfMesh.primitives) {
         auto mesh_opt = getMeshFromPrimitive(asset, primitive);
         if (mesh_opt.has_value()) {
+          mesh_opt->transform = glm::make_mat4(transforms[transform_index].data());
           result.emplace_back(std::move(mesh_opt.value()));
+          ++transform_index;
         }
       }
     }

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 
+#include <fastgltf/math.hpp>
 #include <glm/glm.hpp>
 #include <mr-math/vec.hpp>
 #include <mr-math/color.hpp>
@@ -11,6 +12,7 @@ namespace mr {
 inline namespace importer {
   using Position = glm::vec3;
   using Index = std::uint32_t;
+  using Transform = glm::mat4x4;
   struct VertexAttributes {
     Color color;
     glm::vec3 normal;
@@ -43,6 +45,7 @@ inline namespace importer {
     PositionArray positions;
     VertexAttributesArray attributes;
     std::vector<LOD> lods;
+    Transform transform;
   };
 
   // material-related data

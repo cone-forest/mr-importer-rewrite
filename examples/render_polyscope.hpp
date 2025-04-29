@@ -54,7 +54,8 @@ inline void render(std::vector<mr::Mesh> meshes) {
 	  }
 	  glm::vec3 delta = max - min;
 
-	  for (int j = 0; j < mesh.lods.size(); j++) {
+    int limit = 1;
+	  for (int j = 0; j < mesh.lods.size() && j < limit; j++) {
 		  auto& lod = mesh.lods[j];
 		  auto *meshptr = polyscope::registerSurfaceMesh(
         std::format("Mesh {}; LOD {}", i, j),
@@ -62,6 +63,7 @@ inline void render(std::vector<mr::Mesh> meshes) {
         convertToArrayOfTriples(lod.indices));
 		  meshptr->setPosition(glm::vec3(xoffset + i * std::abs(delta.x), 0, j * std::abs(delta.z)));
 		  meshptr->setEdgeWidth(1.0);  // Enable edge rendering by default
+      meshptr->setTransform(mesh.transform);
 	  }
 	  xoffset += std::abs(delta.x);
   }
