@@ -13,6 +13,9 @@ CPMAddPackage("gh:4j-company/mr-contractor#master")
 CPMAddPackage("gh:4j-company/mr-math#master")
 # CPMAddPackage("gh:raysan5/raylib#master")
 CPMAddPackage("gh:nmwsharp/polyscope#master")
+
+if (NOT TARGET glm)
+cmake_policy(SET CMP0079 NEW)
 CPMFindPackage(
   NAME glm
   GITHUB_REPOSITORY icaven/glm
@@ -21,6 +24,7 @@ CPMFindPackage(
     "GLM_BUILD_LIBRARY ON"
     "GLM_ENABLE_CXX_20 ON"
 )
+endif()
 
 if (NOT TARGET libstb-image)
   # download a single file from stb

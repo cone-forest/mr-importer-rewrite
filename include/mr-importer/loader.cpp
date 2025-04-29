@@ -71,29 +71,26 @@ inline namespace importer {
       return {};
     }
 
-    std::vector<fastgltf::math::fmat4x4> transforms;
+    std::vector<std::vector<glm::mat4>> transforms;
+    transforms.resize(asset.meshes.size());
     fastgltf::iterateSceneNodes(asset, 0, fastgltf::math::fmat4x4(),
       [&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
         if (node.meshIndex.has_value()) {
-          std::println("node name: {}", node.name);
-          std::println("mesh index: {}", *node.meshIndex);
-          transforms.push_back(transpose(matrix));
-          for (int i = 0; i < 4; i++) {
-            std::println("{} {} {} {}", matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3]);
-          }
+          transforms[*node.meshIndex].push_back(glm::make_mat4(matrix.data()));
         }
       }
     );
 
-    int transform_index = 0;
-    for (const auto& gltfMesh : asset.meshes) {
-      for (const auto& primitive : gltfMesh.primitives) {
-        auto mesh_opt = getMeshFromPrimitive(asset, primitive);
-        if (mesh_opt.has_value()) {
-          mesh_opt->transform = glm::make_mat4(transforms[transform_index].data());
-          result.emplace_back(std::move(mesh_opt.value()));
-          ++transform_index;
-        }
+    for (int i = 0; i < asset.meshes.size(); i++) {
+      const fastgltf::Mesh& gltfMesh = asset.meshes[i];
+	  for (int j = 0; j < gltfMesh.primitives.size(); j++) {
+		  const auto& primitive = gltfMesh.primitives[j];
+		  auto mesh_opt = getMeshFromPrimitive(asset, primitive);
+		  if (mesh_opt.has_value()) {
+			  mesh_opt->transforms = transforms[i];
+			  mesh_opt->name = gltfMesh.name;
+			  result.emplace_back(std::move(mesh_opt.value()));
+		  }
       }
     }
 

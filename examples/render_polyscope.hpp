@@ -43,29 +43,16 @@ inline void render(std::vector<mr::Mesh> meshes) {
   for (int i = 0; i < meshes.size(); i++) {
 	  auto& mesh = meshes[i];
 
-	  // Compute min and max for this mesh
-	  glm::vec3 min(std::numeric_limits<float>::max());
-	  glm::vec3 max(std::numeric_limits<float>::lowest());
-	  for (const auto& pos : mesh.positions) {
-		  min.x = std::min(min.x, pos.x);
-		  min.z = std::min(min.z, pos.z);
-		  max.x = std::max(max.x, pos.x);
-		  max.z = std::max(max.z, pos.z);
-	  }
-	  glm::vec3 delta = max - min;
+	  int lodnumber = 0;
+	  auto& lod = mesh.lods.size() - 1 < lodnumber ? mesh.lods.back() : mesh.lods[lodnumber];
+	  auto& pos = mesh.positions;
+	  auto ind = convertToArrayOfTriples(lod.indices);
 
-    int limit = 1;
-	  for (int j = 0; j < mesh.lods.size() && j < limit; j++) {
-		  auto& lod = mesh.lods[j];
-		  auto *meshptr = polyscope::registerSurfaceMesh(
-        std::format("Mesh {}; LOD {}", i, j),
-        mesh.positions,
-        convertToArrayOfTriples(lod.indices));
-		  meshptr->setPosition(glm::vec3(xoffset + i * std::abs(delta.x), 0, j * std::abs(delta.z)));
+	  for (int k = 0; k < mesh.transforms.size(); k++) {
+		  auto* meshptr = polyscope::registerSurfaceMesh(std::format("Mesh {}{}; Instance {}", mesh.name, i, k), pos, ind);
+		  meshptr->setTransform(mesh.transforms[k]);
 		  meshptr->setEdgeWidth(1.0);  // Enable edge rendering by default
-      meshptr->setTransform(mesh.transform);
 	  }
-	  xoffset += std::abs(delta.x);
   }
 
   polyscope::show();

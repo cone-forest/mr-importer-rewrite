@@ -45,7 +45,8 @@ inline namespace importer {
     PositionArray positions;
     VertexAttributesArray attributes;
     std::vector<LOD> lods;
-    Transform transform;
+    std::vector<Transform> transforms;
+    std::string name;
   };
 
   // material-related data

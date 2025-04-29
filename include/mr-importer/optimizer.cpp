@@ -83,6 +83,9 @@ inline namespace importer {
     }
 
     Mesh result;
+    result.transforms = mesh.transforms;
+    result.name = mesh.name;
+
     std::array streams = {
       meshopt_Stream{mesh.positions.data(), sizeof(Position), sizeof(Position)},
       meshopt_Stream{mesh.attributes.data(), sizeof(VertexAttributes), sizeof(VertexAttributes)},
