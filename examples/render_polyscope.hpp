@@ -36,6 +36,8 @@ inline void render(std::vector<mr::Mesh> meshes) {
 
   // Disable ground
   polyscope::options::groundPlaneMode = polyscope::GroundPlaneMode::None;
+  // Set camera to FPS-like
+  polyscope::view::setNavigateStyle(polyscope::NavigateStyle::FirstPerson);
 
   float xoffset = 0;
   for (int i = 0; i < meshes.size(); i++) {
