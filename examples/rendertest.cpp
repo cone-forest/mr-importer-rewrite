@@ -8,9 +8,6 @@ int main(int argc, char **argv) {
   }
 
   auto asset = mr::import(argv[1]);
-  for (auto& mesh : asset.meshes) {
-    mesh = mr::optimize(std::move(mesh));
-  }
 
   render(asset.meshes);
 }

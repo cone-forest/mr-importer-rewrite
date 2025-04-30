@@ -218,7 +218,7 @@ inline namespace importer {
   //           - extract sampler data into SamplerData
   //           - extract from texture URI into ImageData using stb
   //         - compose into TextureData
-  Asset import(std::filesystem::path path) {
+  Asset load(std::filesystem::path path) {
     Asset asset;
 
     asset.meshes = getMeshesFromGLTF(path);

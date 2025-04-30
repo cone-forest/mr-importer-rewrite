@@ -5,6 +5,6 @@
 
 namespace mr {
 inline namespace importer {
-  Asset import(std::filesystem::path path);
+  Asset load(std::filesystem::path path);
 }
 }
