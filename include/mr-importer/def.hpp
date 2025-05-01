@@ -15,8 +15,8 @@ namespace mr {
   template <typename Ret, typename... Args> struct TaskPrototypeBuilder;
 
   template <typename Ret, typename... Args>
-  ApplicableT auto & get_task_prototype() {
-    return TaskPrototypeBuilder<Ret, Args...>::create();
+  auto get_task_prototype() {
+    return std::ref(TaskPrototypeBuilder<Ret, Args...>::create());
   }
 
   template <typename ResultT, typename ...Args>

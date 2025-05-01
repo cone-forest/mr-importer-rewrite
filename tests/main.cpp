@@ -1,15 +1,18 @@
 #include <gtest/gtest.h>
 #include <mr-importer/importer.hpp>
 
+inline static auto f1 = [] (int x) -> int { return x+1; };
+inline static auto f2 = [] (int x) -> int { return x+1; };
+inline static auto f3 = [] (int x) -> int { return x+1; };
+
+inline static auto prototype = mr::Sequence {
+  f1, f2, f3
+};
+
 namespace mr {
   template <>
     struct TaskPrototypeBuilder<int, int> {
-      static ApplicableT auto & create() {
-        static auto prototype = mr::Sequence {
-          [] (int x) -> int { return x+1; },
-          [] (int x) -> int { return x+1; },
-          [] (int x) -> int { return x+1; },
-        };
+      static auto & create() {
         return prototype;
       }
     };

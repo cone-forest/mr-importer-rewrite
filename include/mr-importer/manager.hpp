@@ -39,9 +39,18 @@ public:
         return true;
       }
     };
-    table[name] = {
-      .task = mr::apply(prototype, args...),
-    };
+
+    if constexpr (sizeof...(Args) > 1) {
+      table[name] = {
+        .task = mr::apply(prototype, std::forward_as_tuple(args...))
+      };
+    }
+    else {
+      table[name] = {
+        .task = mr::apply(prototype, args...)
+      };
+    }
+
     table[name].task->schedule();
     return {*this, name};
   }
