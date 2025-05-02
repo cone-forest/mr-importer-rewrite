@@ -13,9 +13,10 @@
 
 using mr::Vec3f;
 
-inline std::vector<std::array<uint32_t, 3>> convertToArrayOfTriples(const std::vector<uint32_t>& input) {
+template <typename T>
+inline std::vector<std::array<T, 3>> convertToArrayOfTriples(const std::vector<T>& input) {
   const uint32_t newSize = input.size() / 3;
-  std::vector<std::array<uint32_t, 3>> result;
+  std::vector<std::array<T, 3>> result;
   result.reserve(newSize);
 
   for (uint32_t i = 0; i < input.size(); i += 3) {
@@ -51,6 +52,7 @@ inline void render(std::vector<mr::Mesh> meshes) {
 	  for (int k = 0; k < mesh.transforms.size(); k++) {
 		  auto* meshptr = polyscope::registerSurfaceMesh(std::format("Mesh {}{}; Instance {}", mesh.name, i, k), pos, ind);
 		  meshptr->setTransform(mesh.transforms[k]);
+		  // meshptr->setMaterial("normal");
 		  meshptr->setEdgeWidth(1.0);  // Enable edge rendering by default
 	  }
   }

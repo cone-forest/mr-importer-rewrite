@@ -13,35 +13,58 @@
 
 namespace mr {
 inline namespace importer {
+  static std::optional<std::reference_wrapper<const fastgltf::Accessor>> getAcessorByName(
+    const fastgltf::Asset &asset,
+    const fastgltf::Primitive &primitive,
+    std::string_view name)
+  {
+    using namespace fastgltf;
+
+    auto attr = primitive.findAttribute(name);
+    if (attr == primitive.attributes.cend()) {
+      std::println("primitive didn't contain {} attribute", name);
+      return std::nullopt;
+    }
+    size_t acessor_id = attr->accessorIndex;
+    if (acessor_id >= asset.accessors.size()) {
+      std::println("primitive didn't contain {} accessor", name);
+      return std::nullopt;
+    }
+    const Accessor& accessor = asset.accessors[acessor_id];
+    if (accessor.type != AccessorType::Vec3 || accessor.componentType != ComponentType::Float) {
+      std::println("primitive's itions were in wrong format (not Vec3f)");
+      return std::nullopt;
+    }
+    if (!accessor.bufferViewIndex.has_value()) {
+      std::println("primitive didn't contain buffer view");
+      return std::nullopt;
+    }
+
+    return std::ref(accessor);
+  }
+
   static std::optional<Mesh> getMeshFromPrimitive(const fastgltf::Asset &asset, const fastgltf::Primitive &primitive) {
     using namespace fastgltf;
 
     Mesh mesh;
 
     // Process POSITION attribute
-    auto posAttr = primitive.findAttribute("POSITION");
-    if (posAttr == primitive.attributes.cend()) {
-      std::println("primitive didn't contain positions");
-      return std::nullopt;
+    std::optional<std::reference_wrapper<const Accessor>> positions = getAcessorByName(asset, primitive, "POSITION");
+    if (positions.has_value()) {
+      mesh.positions.reserve(positions.value().get().count);
+      fastgltf::iterateAccessor<glm::vec3>(asset, positions.value(), [&](glm::vec3 v) {
+        mesh.positions.push_back(v);
+      });
     }
-    size_t posAccessorIndex = posAttr->accessorIndex;
-    if (posAccessorIndex >= asset.accessors.size()) {
-      std::println("primitive didn't contain position accessor");
-      return std::nullopt;
+
+    // Process NORMAL attribute
+    std::optional<std::reference_wrapper<const Accessor>> normals = getAcessorByName(asset, primitive, "NORMAL");
+    if (normals.has_value()) {
+      mesh.attributes.resize(normals.value().get().count);
+      fastgltf::iterateAccessorWithIndex<glm::vec3>(asset, normals.value(), [&](glm::vec3 v, int index) {
+        mesh.attributes[index].normal = v;
+      });
     }
-    const Accessor& posAccessor = asset.accessors[posAccessorIndex];
-    if (posAccessor.type != AccessorType::Vec3 || posAccessor.componentType != ComponentType::Float) {
-      std::println("primitive's positions were in wrong format (not Vec3f)");
-      return std::nullopt;
-    }
-    if (!posAccessor.bufferViewIndex.has_value()) {
-      std::println("primitive didn't contain buffer view");
-      return std::nullopt;
-    }
-    mesh.positions.reserve(posAccessor.count);
-    fastgltf::iterateAccessor<glm::vec3>(asset, posAccessor, [&](glm::vec3 v) {
-      mesh.positions.push_back(v);
-    });
 
     // Process indices
     assert(primitive.indicesAccessor.has_value());

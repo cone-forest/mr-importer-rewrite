@@ -7,11 +7,10 @@ file(
 include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
 CPMAddPackage("gh:SpartanJ/efsw#master")
-CPMAddPackage("gh:spnda/fastgltf#main")
 CPMAddPackage("gh:zeux/meshoptimizer#master")
-CPMAddPackage("gh:4j-company/mr-contractor#non-owning-stage")
+CPMAddPackage("gh:4j-company/fastgltf#main")
+CPMAddPackage("gh:4j-company/mr-contractor#master")
 CPMAddPackage("gh:4j-company/mr-math#master")
-# CPMAddPackage("gh:raysan5/raylib#master")
 CPMAddPackage("gh:nmwsharp/polyscope#master")
 
 if (NOT TARGET glm)
