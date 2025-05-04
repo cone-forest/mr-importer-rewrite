@@ -18,11 +18,11 @@ target_compile_features(mr-importer-lib PUBLIC cxx_std_23)
 target_link_libraries(mr-importer-lib PUBLIC ${MR_IMPORTER_DEPS})
 target_include_directories(mr-importer-lib PUBLIC include)
 
-# add_executable(
-#   mr-importer-tests
-#   tests/main.cpp
-# )
-# target_link_libraries(mr-importer-tests PUBLIC mr-importer-lib gtest_main gtest)
+add_executable(
+  mr-importer-tests
+  tests/main.cpp
+)
+target_link_libraries(mr-importer-tests PUBLIC mr-importer-lib gtest_main gtest)
 
 add_executable(
   mr-importer-example

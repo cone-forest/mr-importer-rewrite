@@ -12,7 +12,7 @@ inline static auto prototype = mr::Sequence {
 namespace mr {
   template <>
     struct TaskPrototypeBuilder<int, int> {
-      static auto & create() {
+      inline static auto & create() {
         return prototype;
       }
     };
