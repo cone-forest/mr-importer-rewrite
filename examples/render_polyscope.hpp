@@ -1,6 +1,10 @@
 #include "mr-importer/assets.hpp"
 #include <polyscope/render/materials.h>
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
+
 #include "polyscope/polyscope.h"
 #include "polyscope/surface_mesh.h"
 
@@ -12,6 +16,17 @@
 #include <array>
 
 using mr::Vec3f;
+
+inline std::string remove_hashtags(std::string_view format_str) {
+  std::string result;
+  result.reserve(format_str.size()); // Optimize by pre-allocating memory
+  for (char c : format_str) {
+    if (c != '#') {
+      result += c;
+    }
+  }
+  return result;
+}
 
 template <typename T>
 inline std::vector<std::array<T, 3>> convertToArrayOfTriples(const std::vector<T>& input) {
@@ -42,19 +57,20 @@ inline void render(std::vector<mr::Mesh> meshes) {
 
   float xoffset = 0;
   for (int i = 0; i < meshes.size(); i++) {
-	  auto& mesh = meshes[i];
+    auto& mesh = meshes[i];
 
-	  int lodnumber = 0;
-	  auto& lod = mesh.lods.size() - 1 < lodnumber ? mesh.lods.back() : mesh.lods[lodnumber];
-	  auto& pos = mesh.positions;
-	  auto ind = convertToArrayOfTriples(lod.indices);
+    int lodnumber = 0;
+    auto& lod = mesh.lods.size() - 1 < lodnumber ? mesh.lods.back() : mesh.lods[lodnumber];
+    auto& pos = mesh.positions;
+    auto ind = convertToArrayOfTriples(lod.indices);
 
-	  for (int k = 0; k < mesh.transforms.size(); k++) {
-		  auto* meshptr = polyscope::registerSurfaceMesh(std::format("Mesh {}{}; Instance {}", mesh.name, i, k), pos, ind);
-		  meshptr->setTransform(mesh.transforms[k]);
-		  // meshptr->setMaterial("normal");
-		  meshptr->setEdgeWidth(1.0);  // Enable edge rendering by default
-	  }
+    for (int k = 0; k < mesh.transforms.size(); k++) {
+      auto fmt = std::format("Mesh {}{}; Instance {}", mesh.name, i, k);
+      auto* meshptr = polyscope::registerSurfaceMesh(remove_hashtags(fmt), pos, ind);
+      meshptr->setTransform(mesh.transforms[k]);
+      // meshptr->setMaterial("normal");
+      meshptr->setEdgeWidth(1.0);  // Enable edge rendering by default
+    }
   }
 
   polyscope::show();
