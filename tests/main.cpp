@@ -18,9 +18,14 @@ namespace mr {
     };
 }
 
-TEST(ImporterTest, ABeautifulGame) {
+TEST(ImporterTest, SingleResource) {
   mr::Manager<int> mgr;
-  auto handle = mgr.create("first", 0);
-  EXPECT_EQ(*handle, 3);
-  EXPECT_TRUE(true);
+  EXPECT_EQ(3, *mgr.create("first",  0));
+}
+
+TEST(ImporterTest, ManyResources) {
+  mr::Manager<int> mgr;
+  EXPECT_EQ(3, *mgr.create("first",  0));
+  EXPECT_EQ(4, *mgr.create("second", 1));
+  EXPECT_EQ(5, *mgr.create("third",  2));
 }
