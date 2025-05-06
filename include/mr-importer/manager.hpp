@@ -28,7 +28,16 @@ private:
 
   std::unordered_map<std::string, Entry> table;
 
+  Manager() {
+    table.reserve(47);
+  }
+
 public:
+  inline static Manager & get() {
+    static Manager mgr;
+    return mgr;
+  }
+
   template <typename ...Args>
   Handle create(std::string name, Args ...args) {
     static auto prototype = mr::Sequence {
