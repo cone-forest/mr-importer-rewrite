@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+#include <tuple>
+
 #include <stb/stb_image.h>
 
 #include <fastgltf/core.hpp>

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <atomic>
+
 #include "def.hpp"
 
 namespace mr {
@@ -8,8 +11,8 @@ template <typename T>
 class Manager {
 private:
   struct Entry {
-    std::shared_ptr<std::atomic<std::shared_ptr<T>>> value =
-    std::make_shared_for_overwrite<std::atomic<std::shared_ptr<T>>>();
+    std::atomic<T*> value = nullptr;
+    std::pair<T, T> buffers;
     mr::Task<bool> task;
   };
 
@@ -19,10 +22,10 @@ private:
 
     T& operator*() {
       auto &entry = mgr.table[key];
-      if (!entry.value->load()) {
+      if (entry.value.load() == nullptr) {
         entry.task->wait();
       }
-      return *entry.value->load();
+      return *entry.value;
     }
   };
 
@@ -43,24 +46,29 @@ public:
     static auto prototype = mr::Sequence {
       mr::get_task_prototype<T, Args...>(),
       [name, this](T result) {
-        auto resptr = std::make_shared<T>(std::move(result));
-        resptr = table[name].value->exchange(std::move(resptr));
+        auto &entry = table[name];
+
+        if (entry.value.load() == &entry.buffers.first) {
+          entry.buffers.second = std::move(result);
+          entry.value = &entry.buffers.second;
+        }
+        else {
+          entry.buffers.first = std::move(result);
+          entry.value = &entry.buffers.first;
+        }
+
         return true;
       }
     };
 
+    auto &entry = table[name];
     if constexpr (sizeof...(Args) > 1) {
-      table[name] = {
-        .task = mr::apply(prototype, std::forward_as_tuple(args...))
-      };
+      entry.task = mr::apply(prototype, std::forward_as_tuple(args...));
     }
     else {
-      table[name] = {
-        .task = mr::apply(prototype, args...)
-      };
+      entry.task = mr::apply(prototype, args...);
     }
-
-    table[name].task->schedule();
+    entry.task->schedule();
     return {*this, name};
   }
 };
