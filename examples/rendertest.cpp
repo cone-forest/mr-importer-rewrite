@@ -1,5 +1,10 @@
+#include <filesystem>
 #include <mr-importer/importer.hpp>
 #include "render_polyscope.hpp"
+
+namespace mr {
+template <> inline mr::Asset import<mr::Asset, std::filesystem::path>(const std::filesystem::path &path) { return import(path, mr::Options::All); }
+}
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -7,7 +12,10 @@ int main(int argc, char **argv) {
     exit(47);
   }
 
-  auto asset = mr::import(argv[1]);
-
-  render(asset.meshes);
+  auto handle = mr::Manager<mr::Asset>::get().create(std::filesystem::path(argv[1]));
+  handle.with(
+    [&](const mr::Asset &asset) {
+      render(asset.meshes);
+    }
+  );
 }

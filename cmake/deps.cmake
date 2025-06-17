@@ -6,6 +6,7 @@ file(
 )
 include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
+find_package(folly REQUIRED)
 find_package(efsw REQUIRED)
 find_package(meshoptimizer REQUIRED)
 find_package(fastgltf REQUIRED)
@@ -35,5 +36,6 @@ set(MR_IMPORTER_DEPS
   efsw::efsw
   stb::stb
   glm::glm
+  folly::folly
   mr-contractor-lib
 )
