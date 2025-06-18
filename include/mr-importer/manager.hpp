@@ -1,68 +1,122 @@
 #pragma once
 
-#include "def.hpp"
+#include <atomic>
+#include <memory_resource>
+#include <functional>
+#include <string>
+#include <stdexcept>
+
+#include <folly/synchronization/Rcu.h>
+#include <folly/concurrency/ConcurrentHashMap.h>
+
+#include <efsw/efsw.hpp>
+
+#include <mr-contractor/contractor.hpp>
 
 namespace mr {
-inline namespace importer {
+using AssetId = std::uint64_t;
+
+template<typename T, typename Id> T import(const Id& id);
+
+template <typename T> struct Manager;
+
 template <typename T>
-class Manager {
-private:
-  struct Entry {
-    std::shared_ptr<std::atomic<std::shared_ptr<T>>> value =
-    std::make_shared_for_overwrite<std::atomic<std::shared_ptr<T>>>();
-    mr::Task<bool> task;
-  };
+struct Handle {
+  const Manager<T> &manager;
+  AssetId id;
 
-  struct Handle {
-    Manager &mgr;
-    std::string key {};
+  Handle(const Manager<T>& mgr, AssetId asset_id)
+  : manager(mgr), id(asset_id) {}
 
-    T& operator*() {
-      auto &entry = mgr.table[key];
-      if (!entry.value->load()) {
-        entry.task->wait();
-      }
-      return *entry.value->load();
-    }
-  };
-
-  std::unordered_map<std::string, Entry> table;
-
-  Manager() {
-    table.reserve(47);
-  }
-
-public:
-  inline static Manager & get() {
-    static Manager mgr;
-    return mgr;
-  }
-
-  template <typename ...Args>
-  Handle create(std::string name, Args ...args) {
-    static auto prototype = mr::Sequence {
-      mr::get_task_prototype<T, Args...>(),
-      [name, this](T result) {
-        auto resptr = std::make_shared<T>(std::move(result));
-        resptr = table[name].value->exchange(std::move(resptr));
-        return true;
-      }
-    };
-
-    if constexpr (sizeof...(Args) > 1) {
-      table[name] = {
-        .task = mr::apply(prototype, std::forward_as_tuple(args...))
-      };
-    }
-    else {
-      table[name] = {
-        .task = mr::apply(prototype, args...)
-      };
+  template <typename F>
+  bool with(F&& func) {
+    const auto &entry = manager.find(id);
+    if (T* ptr = entry.value.load(std::memory_order_acquire); ptr != nullptr) {
+      std::scoped_lock<folly::rcu_domain> guard {folly::rcu_default_domain()};
+      std::invoke(func, *ptr);
+      return true;
     }
 
-    table[name].task->schedule();
-    return {*this, name};
+    return false;
   }
 };
-}
-}
+
+template <typename T>
+struct Manager {
+  struct Entry {
+    std::atomic<T*> value = nullptr;
+
+    Entry() = default;
+    Entry(Entry &&other) {
+      value.store(other.value.load(std::memory_order_acquire));
+    }
+    Entry & operator=(Entry &&other) {
+      value.store(other.value.load(std::memory_order_acquire));
+      return *this;
+    }
+  };
+
+  static inline constexpr size_t _max_elements = 1024;
+  static inline constexpr size_t _buffer_size = sizeof(T) * _max_elements;
+
+  static inline std::array<std::byte, _buffer_size> _memory_buffer {};
+  static inline std::pmr::monotonic_buffer_resource _memory_resource {_memory_buffer.data(), _buffer_size};
+  static inline std::pmr::synchronized_pool_resource _memory_pool_resource {&_memory_resource};
+  static inline std::pmr::polymorphic_allocator<T> _allocator {&_memory_pool_resource};
+
+  static Manager& get() {
+    static Manager instance;
+    return instance;
+  }
+
+  folly::ConcurrentHashMap<AssetId, Entry> _table {_max_elements};
+
+  template<typename Id>
+  Handle<T> create(Id&& id) {
+    AssetId asset_id = std::hash<std::string>{}(std::string(id));
+
+    auto it = _table.find(asset_id);
+    if (it != _table.end()) {
+      return Handle<T>{*this, it->first};
+    }
+
+    Entry entry = init_entry(id);
+    _table.insert(asset_id, std::move(entry));
+
+    return Handle<T>{*this, asset_id};
+  }
+
+  const Entry &find(AssetId id) const {
+    auto it = _table.find(id);
+    if (it == _table.end()) {
+      throw std::runtime_error("Asset not found");
+    }
+    return it->second;
+  }
+
+private:
+  Manager() noexcept = default;
+
+  ~Manager() {
+    for (auto& [id, entry] : _table) {
+      if (T* ptr = entry.value.load(std::memory_order_acquire)) {
+        ptr->~T();
+        _allocator.deallocate(ptr, 1);
+      }
+    }
+  }
+
+  template <typename Id>
+  static Entry init_entry(Id &&id) {
+    Entry entry {};
+    T* ptr = _allocator.allocate(1);
+    assert(ptr != nullptr);
+
+    new (ptr) T(import<T, std::remove_reference_t<Id>>(std::forward<Id>(id)));
+
+    entry.value.store(ptr, std::memory_order_release);
+    return entry;
+  }
+};
+
+} // namespace mr

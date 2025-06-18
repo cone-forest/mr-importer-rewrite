@@ -1,6 +1,9 @@
 #pragma once
 
-#include <stb/stb_image.h>
+#include <functional>
+#include <tuple>
+
+#include <stb_image.h>
 
 #include <fastgltf/core.hpp>
 #include <fastgltf/tools.hpp>
@@ -9,7 +12,6 @@
 #include <meshoptimizer.h>
 
 #include <mr-contractor/contractor.hpp>
-#include <mr-math/math.hpp>
 
 namespace mr {
   template <typename Ret, typename... Args> struct TaskPrototypeBuilder;
