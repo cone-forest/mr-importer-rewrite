@@ -15,21 +15,6 @@ find_package(stb REQUIRED)
 CPMAddPackage("gh:4j-company/mr-contractor#master")
 CPMAddPackage("gh:nmwsharp/polyscope#master")
 
-# CPMAddPackage("gh:SpartanJ/efsw#master")
-# CPMAddPackage("gh:zeux/meshoptimizer#master")
-# CPMAddPackage("gh:4j-company/fastgltf#main")
-# if (NOT TARGET glm)
-# cmake_policy(SET CMP0079 NEW)
-# CPMFindPackage(
-#   NAME glm
-#   GITHUB_REPOSITORY icaven/glm
-#   GIT_TAG master
-#   OPTIONS
-#     "GLM_BUILD_LIBRARY ON"
-#     "GLM_ENABLE_CXX_20 ON"
-# )
-# endif()
-
 set(MR_IMPORTER_DEPS
   meshoptimizer::meshoptimizer
   fastgltf::fastgltf

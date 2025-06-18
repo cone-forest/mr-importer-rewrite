@@ -1,10 +1,6 @@
 #include "mr-importer/assets.hpp"
 #include <polyscope/render/materials.h>
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-
 #include "polyscope/polyscope.h"
 #include "polyscope/surface_mesh.h"
 
