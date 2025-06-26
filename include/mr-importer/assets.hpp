@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <vector>
 
 #include <fastgltf/math.hpp>
@@ -70,6 +71,9 @@ inline namespace importer {
   struct Asset {
     std::vector<Mesh> meshes;
     std::vector<MaterialData> materials;
+
+    Asset() = default;
+    Asset(const std::filesystem::path &path);
   };
 }
 }

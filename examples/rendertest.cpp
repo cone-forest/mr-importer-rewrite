@@ -2,10 +2,6 @@
 #include <mr-importer/importer.hpp>
 #include "render_polyscope.hpp"
 
-namespace mr {
-template <> inline mr::Asset import<mr::Asset, std::filesystem::path>(const std::filesystem::path &path) { return import(path, mr::Options::All); }
-}
-
 int main(int argc, char **argv) {
   if (argc != 2) {
     printf("Usage: mr-importer-example <filename>");

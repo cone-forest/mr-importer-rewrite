@@ -8,6 +8,7 @@ include(cmake/deps.cmake)
 add_library(mr-importer-lib
   include/mr-importer/def.hpp
   include/mr-importer/assets.hpp
+  include/mr-importer/assets.cpp
   include/mr-importer/importer.hpp
   include/mr-importer/loader.hpp
   include/mr-importer/loader.cpp

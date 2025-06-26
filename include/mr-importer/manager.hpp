@@ -3,7 +3,6 @@
 #include <atomic>
 #include <memory_resource>
 #include <functional>
-#include <string>
 #include <stdexcept>
 
 #include <folly/synchronization/Rcu.h>
@@ -12,6 +11,8 @@
 #include <efsw/efsw.hpp>
 
 #include <mr-contractor/contractor.hpp>
+
+#include "hash.hpp"
 
 namespace mr {
 using AssetId = std::uint64_t;
@@ -71,17 +72,16 @@ struct Manager {
 
   folly::ConcurrentHashMap<AssetId, Entry> _table {_max_elements};
 
-  template<typename Id>
-  Handle<T> create(Id&& id) {
-    AssetId asset_id = std::hash<std::string>{}(std::string(id));
+  template<typename ...Args>
+  Handle<T> create(Args&& ...args) {
+    AssetId asset_id = mr::hash<Args...>{}(args...);
 
     auto it = _table.find(asset_id);
     if (it != _table.end()) {
-      return Handle<T>{*this, it->first};
+      return Handle<T>{*this, asset_id};
     }
 
-    Entry entry = init_entry(id);
-    _table.insert(asset_id, std::move(entry));
+    _table.insert(asset_id, init_entry(std::forward<Args>(args)...));
 
     return Handle<T>{*this, asset_id};
   }
@@ -106,13 +106,13 @@ private:
     }
   }
 
-  template <typename Id>
-  static Entry init_entry(Id &&id) {
+  template <typename ...Args>
+  static Entry init_entry(Args && ...args) {
     Entry entry {};
     T* ptr = _allocator.allocate(1);
     assert(ptr != nullptr);
 
-    new (ptr) T(import<T, std::remove_reference_t<Id>>(std::forward<Id>(id)));
+    new (ptr) T(std::forward<Args>(args)...);
 
     entry.value.store(ptr, std::memory_order_release);
     return entry;
