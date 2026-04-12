@@ -30,6 +30,7 @@ class mr_importerRecipe(ConanFile):
     )
 
     def requirements(self):
+        self.requires("boost/1.88.0", override=True)
         self.requires("spdlog/1.14.1", override=True)
 
         self.requires("meshoptimizer/1.0")
@@ -41,8 +42,6 @@ class mr_importerRecipe(ConanFile):
         self.requires("glm/1.0.1")
 
         self.requires("openusd/26.03")
-        # Propagated for consumers: libusd_hdSt references osdGPU (GLSL patch sources).
-        self.requires("opensubdiv/3.6.0")
         self.requires("slang/2025.10.4")
 
         self.requires("onetbb/2022.2.0", force=True)
